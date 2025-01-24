@@ -1,0 +1,311 @@
+---
+title: "Priorities for tidymodels 2024"
+author: "Julia Silge"
+date: '`r Sys.Date()`'
+output: 
+  html_document:
+    theme: yeti
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, 
+                      message = FALSE, echo = TRUE, 
+                      dpi = 300,
+                      fig.width = 8, fig.height = 5)
+library(tidyverse)
+library(silgelib)
+library(scales)
+
+theme_transparent <- function(...) {
+
+  ret <- ggplot2::theme_minimal(...)
+  
+  trans_rect <- ggplot2::element_rect(fill = "transparent", colour = NA)
+  ret$panel.background  <- trans_rect
+  ret$plot.background   <- trans_rect
+  ret$legend.background <- trans_rect
+  ret$legend.key        <- trans_rect
+  
+  ret
+}
+
+theme_set(theme_plex())
+##theme_set(theme_transparent())
+update_geom_defaults("col", list(fill = "#54B5BF"))
+update_stat_defaults("bin", list(fill = "#54B5BF"))
+
+## if you don't have fancy fonts like IBM Plex installed, run
+## theme_set(theme_minimal())
+```
+
+
+The tidymodels team [fielded a short survey](https://www.tidyverse.org/blog/2024/02/tidymodels-2024-survey/) to gather community feedback on development priorities and possible next steps in 2024. This report summarizes the survey results.
+
+## tl;dr
+
+- Almost 340 people responded to the survey (a significant decrease from last year).
+- About half of respondents say they have used tidymodels packages many times.
+- About 60% of respondents say they work in industry.
+- The priority given the most weight by our respondents (across most groups) is by far causal inference.
+- Priorities involving the chattr package, cost-sensitive learning, and sparse tibbles were among the most likely to be given zero weight.
+
+## Exploring the data
+
+Let's start by exploring the characteristics of the survey respondents.
+
+```{r tidy_survey}
+library(tidyverse)
+library(qualtRics)
+library(glue)
+
+survey_id <- "SV_aWw8ocGN5aPgeZE"
+
+survey_raw <- fetch_survey(survey_id, verbose = FALSE, force_request = TRUE) %>%
+  filter(Status != "Survey Preview", Finished)
+
+survey_select <- survey_raw %>%
+  select(Q5_1:Q5_12, Q1002, Q12)
+
+metadata_raw <- metadata(survey_id)
+
+choice_text <- metadata_raw$questions$QID2001$choices %>% 
+  map_chr("choiceText")
+
+question_text <- survey_questions(survey_id) %>%
+  filter(qname %in% c("Q1002", "Q12"))
+
+labels_df <-
+  enframe(choice_text) %>% 
+  transmute(qname = glue("Q5_{name}"), 
+            question = map(value, xml2::read_html)) %>% 
+  mutate(question = map(question, xml2::as_list), 
+         question = map_chr(question, ~.$html$body$strong[[1]])) %>%
+  bind_rows(question_text)
+
+tidy_survey <- survey_select %>% 
+  pivot_longer(Q5_1:Q5_12, names_to = "qname", values_to = "dollars") %>% 
+  inner_join(labels_df) %>%
+  select(-qid, -force_resp) %>%
+  filter(question != "Other")
+
+survey_raw %>%
+  count(StartDate = as.Date(StartDate)) %>%
+  ggplot(aes(StartDate, n)) +
+  geom_col(alpha = 0.8) +
+  labs(x = NULL, 
+       y = "Number of survey responses",
+       title = "Survey responses over time",
+       subtitle = glue("There are ", {nrow(survey_raw)}, " total responses"))
+
+survey_raw %>%
+  mutate(Q1002 = fct_relabel(Q1002, str_wrap, width = 20)) %>%
+  count(Q1002) %>%
+  ggplot(aes(x = n, y = Q1002)) +
+  geom_col(alpha = 0.8) +
+  scale_x_continuous(expand = c(0,0)) +
+  labs(x = "Number of survey responses", 
+       y = NULL,
+       title = "Familiarity with tidymodels",
+       subtitle = glue("Of the respondents, ", 
+                       {percent(mean(str_detect(survey_raw$Q1002, "many times")))}, 
+                       " say they have used tidymodels many times"))
+
+survey_raw %>%
+  filter(`Duration (in seconds)` < 5e4) %>%
+  mutate(Q1002 = fct_relabel(Q1002, str_wrap, width = 20)) %>%
+  ggplot(aes(Q1002, `Duration (in seconds)`, fill = Q1002)) +
+  geom_boxplot(show.legend = FALSE, alpha = 0.7) +
+  scale_y_log10() +
+  labs(x = NULL,
+       y = "Time to take the survey (seconds)",
+       title = "Survey length in seconds",
+       subtitle = glue(
+         "The median time to take the survey was ",
+         {round(median(survey_raw$`Duration (in seconds)`) / 60, 2)},
+         " minutes")
+  )
+
+survey_raw %>%
+  mutate(Q12 = fct_relabel(Q12, str_wrap, width = 20)) %>%
+  count(Q12) %>%
+  ggplot(aes(x = n, y = Q12)) +
+  geom_col(alpha = 0.8) +
+  scale_x_continuous(expand = c(0,0)) +
+  labs(x = "Number of survey responses", 
+       y = NULL,
+       title = "Current role",
+       subtitle = glue("Of the respondents, ", 
+                       {percent(mean(str_detect(survey_raw$Q12, "in industry")))}, 
+                       " say they work in industry"))
+```
+
+
+## Perspectives on priorities
+
+The main question on the survey asked:
+
+> If you had a hypothetical $100 to spend on tidymodels development, how would you allocate those resources right now?
+
+The possible priorities were presented in a randomized order to respondents, except for the "Other" option at the bottom.
+
+## Mean dollars allocated {.tabset}
+
+### Overall
+
+```{r mean_all, dependson="tidy_survey", fig.width=9, fig.height=6}
+tidy_survey %>%
+  mutate(question = str_wrap(question, width = 25)) %>%
+  group_by(question) %>%
+  summarise(dollars_mean = mean(dollars)) %>%
+  mutate(question = fct_reorder(question, dollars_mean)) %>%
+  ggplot(aes(dollars_mean, question)) +
+  geom_col(alpha = 0.8) +
+  scale_x_continuous(labels = dollar_format(),
+                     expand = c(0,0)) +
+  labs(x = "Mean hypothetical dollars allocated",
+       y = NULL,
+       title = "What are the average dollars allocated to each priority?",
+       subtitle = "Causal inference had by far the highest mean scores")
+```
+
+### By experience
+
+```{r mean_exp, dependson="tidy_survey", fig.width=10, fig.height=9}
+library(tidytext)
+
+tidy_survey %>%
+  mutate(question = str_wrap(question, width = 25),
+         Q1002 = fct_relabel(Q1002, str_wrap, width = 50)) %>%
+  group_by(Q1002, question) %>%
+  summarise(dollars_mean = mean(dollars)) %>%
+  ungroup %>%
+  mutate(question = reorder_within(question, dollars_mean, as.character(Q1002))) %>%
+  ggplot(aes(dollars_mean, question, fill = Q1002)) +
+  geom_col(alpha = 0.8, show.legend = FALSE) +
+  facet_wrap(~Q1002, scales = "free_y") +
+  scale_x_continuous(labels = dollar_format(),
+                     expand = c(0,0)) +
+  scale_y_reordered() +
+  labs(x = "Mean hypothetical dollars allocated",
+       y = NULL,
+       title = "What are the average dollars allocated to each priority?",
+       subtitle = "Folks who have contributed to or taught tidymodels prefer causal inference less")
+```
+
+### By role
+
+```{r mean_role, dependson="tidy_survey", fig.width=10, fig.height=9}
+tidy_survey %>%
+  mutate(question = str_wrap(question, width = 25),
+         Q12 = fct_relabel(Q12, str_wrap, width = 40)) %>%
+  group_by(Q12, question) %>%
+  summarise(dollars_mean = mean(dollars)) %>%
+  ungroup %>%
+  mutate(question = reorder_within(question, dollars_mean, as.character(Q12))) %>%
+  ggplot(aes(dollars_mean, question, fill = Q12)) +
+  geom_col(alpha = 0.8, show.legend = FALSE) +
+  facet_wrap(~Q12, scales = "free_y") +
+  scale_x_continuous(labels = dollar_format(),
+                     expand = c(0,0)) +
+  scale_y_reordered() +
+  labs(x = "Mean hypothetical dollars allocated",
+       y = NULL,
+       title = "What are the average dollars allocated to each priority?",
+       subtitle = "Causal inference had the highest mean score for most groups")
+```
+
+
+## Don't spend it all in one place 💵
+
+How many people gave their entire $100 to one priority? Very few:
+
+```{r dependson="tidy_survey"}
+tidy_survey %>% 
+  filter(dollars > 99) %>% 
+  count(question, sort = TRUE) %>% 
+  kable(col.names = c("Priority", "Number of respondents allocating *all*"))
+```
+
+## Priorities least likely to be chosen {.tabset}
+
+What priorities were people more likely to allocate $0 to?
+
+### Overall
+
+```{r none_all, dependson="tidy_survey", fig.width=9, fig.height=6}
+tidy_survey %>% 
+  mutate(question = str_wrap(question, width = 25)) %>%
+  group_by(question) %>% 
+  summarise(none = sum(dollars < 1)) %>%
+  ggplot(aes(none, fct_reorder(question, none))) +
+  geom_col(alpha = 0.8) +
+  scale_x_continuous(expand = c(0,0)) +
+  labs(x = "Number of people who allocated nothing",
+       y = NULL,
+       title = "Which priorities were chosen least often?",
+       subtitle = "The chattr package was chosen less often")
+```
+
+### By experience
+
+```{r none_exp, dependson="tidy_survey", fig.width=10, fig.height=9}
+tidy_survey %>% 
+  mutate(question = str_wrap(question, width = 25),
+         Q1002 = fct_relabel(Q1002, str_wrap, width = 50)) %>%
+  group_by(Q1002, question) %>%
+  summarise(none = sum(dollars < 1)) %>%
+  ungroup %>%
+  mutate(question = reorder_within(question, none, as.character(Q1002))) %>%
+  ggplot(aes(none, question, fill = Q1002)) +
+  geom_col(alpha = 0.8, show.legend = FALSE) +
+  facet_wrap(~Q1002, scales = "free") +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_reordered() +
+  labs(x = "Number of people who allocated nothing",
+       y = NULL,
+       title = "Which priorities were chosen least often?",
+       subtitle = "The group that has never used tidymodels is the most different")
+```
+
+### By role
+
+```{r none_role, dependson="tidy_survey", fig.width=10, fig.height=9}
+tidy_survey %>%
+  mutate(question = str_wrap(question, width = 25),
+         Q12 = fct_relabel(Q12, str_wrap, width = 40)) %>%
+  group_by(Q12, question) %>%
+  summarise(none = sum(dollars < 1)) %>%
+  ungroup %>%
+  mutate(question = reorder_within(question, none, as.character(Q12))) %>%
+  ggplot(aes(none, question, fill = Q12)) +
+  geom_col(alpha = 0.8, show.legend = FALSE) +
+  facet_wrap(~Q12, scales = "free") +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_reordered() +
+  labs(x = "Number of people who allocated nothing",
+       y = NULL,
+       title = "Which priorities were chosen least often?",
+       subtitle = "The chattr package is least chosen for all groups")
+```
+
+
+## Other answers
+
+We offered respondents the opportunity to give us their own ideas for priorities as well. What kinds of options did respondents suggest?
+
+```{r dependson="tidy_survey"}
+library(DT)
+survey_raw %>%
+  filter(!is.na(Q5_12_TEXT)) %>%
+  arrange(Q1002) %>%
+  select(Q1002, Q5_12_TEXT) %>%
+  datatable(colnames = c("Familiarity with tidymodels",
+                         "Suggested priority"),
+            options = list(pageLength = 25))
+```
+
+

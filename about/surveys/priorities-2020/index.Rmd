@@ -1,0 +1,224 @@
+---
+title: "Priorities for tidymodels"
+author: "Julia Silge"
+date: '`r Sys.Date()`'
+output: 
+  html_document:
+    theme: yeti
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, 
+                      message = FALSE, echo = TRUE, dpi = 300,
+                      fig.width = 8, fig.height = 5)
+library(tidyverse)
+library(silgelib)
+library(scales)
+theme_set(theme_plex())
+update_geom_defaults("col", list(fill = "#54B5BF"))
+update_stat_defaults("bin", list(fill = "#54B5BF"))
+
+## if you don't have fancy fonts like IBM Plex installed, run
+## theme_set(theme_minimal())
+```
+
+
+The tidymodels team [fielded a short survey](https://twitter.com/juliasilge/status/1254879555979849729) to gather community feedback on development priorities and possible next steps. This report summarizes the survey results.
+
+## tl;dr
+
+- Over 300 people responded to our survey, most of whom said they have used tidymodels a few times.
+- The priorities given the most weight by our respondents include model stacking and a system for model monitoring, updating, and organization (across all groups).
+- Priorities involving the inner workings of tidymodels (such as skipping recipe steps, sparse data structures, etc) were among the most likely to be given zero weight.
+
+## Exploring the data
+
+Let's start by exploring the characteristics of the survey respondents.
+
+```{r tidy_survey}
+library(tidyverse)
+library(qualtRics)
+library(glue)
+
+survey_id <- "SV_ezYI0F3V9K5Tr3D"
+
+survey_raw <- fetch_survey(survey_id, verbose = FALSE, force_request = TRUE)
+
+survey_select <- survey_raw %>%
+  select(Q5_1:Q5_12, Q1002)
+
+labels_df <- enframe(sjlabelled::get_label(survey_select)) %>%
+  transmute(qid = name,
+            priority = str_trim(value))
+
+tidy_survey <- survey_select %>% 
+  pivot_longer(Q5_1:Q5_12, names_to = "qid", values_to = "dollars") %>% 
+  inner_join(labels_df) %>%
+  filter(priority != "Other")
+
+survey_raw %>%
+  count(StartDate = as.Date(StartDate)) %>%
+  ggplot(aes(StartDate, n)) +
+  geom_col(alpha = 0.8) +
+  labs(x = NULL, 
+       y = "Number of survey responses",
+       title = "Survey responses over time",
+       subtitle = glue("There are ", {nrow(survey_raw)}, " total responses"))
+
+survey_raw %>%
+  mutate(Q1002 = fct_relabel(Q1002, str_wrap, width = 20)) %>%
+  count(Q1002) %>%
+  ggplot(aes(x = n, y = Q1002)) +
+  geom_col(alpha = 0.8) +
+  scale_x_continuous(expand = c(0,0)) +
+  labs(x = "Number of survey responses", 
+       y = NULL,
+       title = "Familiarity with tidymodels",
+       subtitle = glue("Of the respondents, ", 
+                       {percent(mean(str_detect(survey_raw$Q1002, "a few times")))}, 
+                       " say they have used tidymodels a few times"))
+
+survey_raw %>%
+  filter(`Duration (in seconds)` < 5e4) %>%
+  mutate(Q1002 = fct_relabel(Q1002, str_wrap, width = 20)) %>%
+  ggplot(aes(Q1002, `Duration (in seconds)`, fill = Q1002)) +
+  geom_boxplot(show.legend = FALSE, alpha = 0.7) +
+  scale_y_log10() +
+  labs(x = NULL,
+       y = "Time to take the survey (seconds)",
+       title = "Survey length in seconds",
+       subtitle = glue(
+         "The median time to take the survey was ",
+         {round(median(survey_raw$`Duration (in seconds)`) / 60, 2)},
+         " minutes")
+  )
+
+```
+
+
+## Perspectives on priorities
+
+The main question on the survey asked:
+
+> If you had a hypothetical $100 to spend on tidymodels development, how would you allocate those resources right now?
+
+The possible priorities were presented in a randomized order to respondents, except for the "Other" option at the bottom.
+
+## Mean dollars allocated {.tabset}
+
+### Overall
+
+```{r mean_all, dependson="tidy_survey", fig.width=9, fig.height=6}
+tidy_survey %>%
+  mutate(priority = str_wrap(priority, width = 20)) %>%
+  group_by(priority) %>%
+  summarise(dollars_mean = mean(dollars)) %>%
+  mutate(priority = fct_reorder(priority, dollars_mean)) %>%
+  ggplot(aes(dollars_mean, priority)) +
+  geom_col(alpha = 0.8) +
+  scale_x_continuous(labels = dollar_format(),
+                     expand = c(0,0)) +
+  labs(x = "Mean hypothetical dollars allocated",
+       y = NULL,
+       title = "What are the average dollars allocated to each priority?",
+       subtitle = "Model stacking and model monitoring had the highest mean scores")
+```
+
+### By experience
+
+```{r mean_exp, dependson="tidy_survey", fig.width=10, fig.height=9}
+library(tidytext)
+
+tidy_survey %>%
+  mutate(priority = str_wrap(priority, width = 20),
+         Q1002 = fct_relabel(Q1002, str_wrap, width = 50)) %>%
+  group_by(Q1002, priority) %>%
+  summarise(dollars_mean = mean(dollars)) %>%
+  ungroup %>%
+  mutate(priority = reorder_within(priority, dollars_mean, as.character(Q1002))) %>%
+  ggplot(aes(dollars_mean, priority, fill = Q1002)) +
+  geom_col(alpha = 0.8, show.legend = FALSE) +
+  facet_wrap(~Q1002, scales = "free_y") +
+  scale_x_continuous(labels = dollar_format(),
+                     expand = c(0,0)) +
+  scale_y_reordered() +
+  labs(x = "Mean hypothetical dollars allocated",
+       y = NULL,
+       title = "What are the average dollars allocated to each priority?",
+       subtitle = "Model stacking and model monitoring had the highest mean scores for all groups")
+```
+
+## Don't spend it all in one place `r emo::ji("dollar")`
+
+How many people gave their entire $100 to one priority? Very few:
+
+```{r dependson="tidy_survey"}
+tidy_survey %>% 
+  filter(dollars > 99) %>% 
+  count(priority, sort = TRUE) %>% 
+  kable(col.names = c("Priority", "Number of respondents allocating *all*"))
+```
+
+## Priorities least likely to be chosen {.tabset}
+
+What priorities were people more likely to allocate $0 to?
+
+### Overall
+
+```{r none_all, dependson="tidy_survey", fig.width=9, fig.height=6}
+tidy_survey %>% 
+  mutate(priority = str_wrap(priority, width = 20)) %>%
+  group_by(priority) %>% 
+  summarise(none = sum(dollars < 1)) %>%
+  ggplot(aes(none, fct_reorder(priority, none))) +
+  geom_col(alpha = 0.8) +
+  scale_x_continuous(expand = c(0,0)) +
+  labs(x = "Number of people who allocated nothing",
+       y = NULL,
+       title = "Which priorities were chosen least often?",
+       subtitle = "Sparse structures, ignoring recipe steps, and H2O support were chosen less often")
+```
+
+### By experience
+
+```{r none_exp, dependson="tidy_survey", fig.width=10, fig.height=9}
+tidy_survey %>% 
+  mutate(priority = str_wrap(priority, width = 20),
+         Q1002 = fct_relabel(Q1002, str_wrap, width = 50)) %>%
+  group_by(Q1002, priority) %>%
+  summarise(none = sum(dollars < 1)) %>%
+  ungroup %>%
+  mutate(priority = reorder_within(priority, none, as.character(Q1002))) %>%
+  ggplot(aes(none, priority, fill = Q1002)) +
+  geom_col(alpha = 0.8, show.legend = FALSE) +
+  facet_wrap(~Q1002, scales = "free") +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_reordered() +
+  labs(x = "Number of people who allocated nothing",
+       y = NULL,
+       title = "Which priorities were chosen least often?",
+       subtitle = "There is more variation between groups in what is never chosen than the mean allocated")
+```
+
+
+## Other answers
+
+We offered respondents the opportunity to give us their own ideas for priorities as well. What kinds of options did respondents suggest?
+
+```{r dependson="tidy_survey"}
+library(DT)
+survey_raw %>%
+  filter(!is.na(Q5_12_TEXT)) %>%
+  arrange(Q1002) %>%
+  select(Q1002, Q5_12_TEXT) %>%
+  datatable(colnames = c("Familiarity with tidymodels",
+                         "Suggested priority"),
+            options = list(pageLength = 25))
+```
+
+
+Some of these suggestions cover work already planned (mixed effects models) but others focus on areas we already support (lasso, unsupervised methods). Some of that is to be expected from any survey of users like this, but their prevalence likely reflects a lack of documentation and resources showing how to use tidymodels for such tasks.

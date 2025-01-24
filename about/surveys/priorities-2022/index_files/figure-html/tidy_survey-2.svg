@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' class='svglite' width='576.00pt' height='360.00pt' viewBox='0 0 576.00 360.00'>
+<defs>
+  <style type='text/css'><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+  ]]></style>
+</defs>
+<rect width='100%' height='100%' style='stroke: none; fill: #FFFFFF;'/>
+<defs>
+  <clipPath id='cpMC4wMHw1NzYuMDB8MC4wMHwzNjAuMDA='>
+    <rect x='0.00' y='0.00' width='576.00' height='360.00' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMC4wMHw1NzYuMDB8MC4wMHwzNjAuMDA=)'>
+<rect x='0.000000000000064' y='0.00' width='576.00' height='360.00' style='stroke-width: 1.07; stroke: none;' />
+</g>
+<defs>
+  <clipPath id='cpOTIuNTh8NTcwLjUyfDM5LjA3fDMyOC4yNQ=='>
+    <rect x='92.58' y='39.07' width='477.94' height='289.18' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpOTIuNTh8NTcwLjUyfDM5LjA3fDMyOC4yNQ==)'>
+<rect x='92.58' y='39.07' width='477.94' height='289.18' style='stroke-width: 1.07; stroke: none;' />
+<polyline points='137.17,328.25 137.17,39.07 ' style='stroke-width: 0.53; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='226.34,328.25 226.34,39.07 ' style='stroke-width: 0.53; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='315.50,328.25 315.50,39.07 ' style='stroke-width: 0.53; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='404.67,328.25 404.67,39.07 ' style='stroke-width: 0.53; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='493.84,328.25 493.84,39.07 ' style='stroke-width: 0.53; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='92.58,286.94 570.52,286.94 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='92.58,218.09 570.52,218.09 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='92.58,149.23 570.52,149.23 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='92.58,80.38 570.52,80.38 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='92.58,328.25 92.58,39.07 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='181.75,328.25 181.75,39.07 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='270.92,328.25 270.92,39.07 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='360.09,328.25 360.09,39.07 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='449.25,328.25 449.25,39.07 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='538.42,328.25 538.42,39.07 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<rect x='92.58' y='255.96' width='49.93' height='61.97' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #54B5BF; fill-opacity: 0.80;' />
+<rect x='92.58' y='187.10' width='477.94' height='61.97' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #54B5BF; fill-opacity: 0.80;' />
+<rect x='92.58' y='118.25' width='460.10' height='61.97' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #54B5BF; fill-opacity: 0.80;' />
+<rect x='92.58' y='49.40' width='99.87' height='61.97' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #54B5BF; fill-opacity: 0.80;' />
+</g>
+<g clip-path='url(#cpMC4wMHw1NzYuMDB8MC4wMHwzNjAuMDA=)'>
+<text x='87.65' y='285.34' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='69.96px' lengthAdjust='spacingAndGlyphs'>I have never used</text>
+<text x='87.65' y='294.85' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='42.06px' lengthAdjust='spacingAndGlyphs'>tidymodels</text>
+<text x='87.65' y='211.74' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='45.50px' lengthAdjust='spacingAndGlyphs'>I have used</text>
+<text x='87.65' y='221.24' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='82.17px' lengthAdjust='spacingAndGlyphs'>tidymodels packages</text>
+<text x='87.65' y='230.74' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='44.48px' lengthAdjust='spacingAndGlyphs'>a few times</text>
+<text x='87.65' y='142.88' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='45.50px' lengthAdjust='spacingAndGlyphs'>I have used</text>
+<text x='87.65' y='152.39' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='82.17px' lengthAdjust='spacingAndGlyphs'>tidymodels packages</text>
+<text x='87.65' y='161.89' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='44.98px' lengthAdjust='spacingAndGlyphs'>many times</text>
+<text x='87.65' y='64.53' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='69.95px' lengthAdjust='spacingAndGlyphs'>I have contributed</text>
+<text x='87.65' y='74.03' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='51.83px' lengthAdjust='spacingAndGlyphs'>to tidymodels</text>
+<text x='87.65' y='83.54' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='74.85px' lengthAdjust='spacingAndGlyphs'>packages or taught</text>
+<text x='87.65' y='93.04' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='69.45px' lengthAdjust='spacingAndGlyphs'>others how to use</text>
+<text x='87.65' y='102.54' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='19.56px' lengthAdjust='spacingAndGlyphs'>them</text>
+<text x='92.58' y='339.49' text-anchor='middle' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='4.90px' lengthAdjust='spacingAndGlyphs'>0</text>
+<text x='181.75' y='339.49' text-anchor='middle' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='9.79px' lengthAdjust='spacingAndGlyphs'>50</text>
+<text x='270.92' y='339.49' text-anchor='middle' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='14.69px' lengthAdjust='spacingAndGlyphs'>100</text>
+<text x='360.09' y='339.49' text-anchor='middle' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='14.69px' lengthAdjust='spacingAndGlyphs'>150</text>
+<text x='449.25' y='339.49' text-anchor='middle' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='14.69px' lengthAdjust='spacingAndGlyphs'>200</text>
+<text x='538.42' y='339.49' text-anchor='middle' style='font-size: 8.80px; fill: #4D4D4D; font-family: Arial;' textLength='14.69px' lengthAdjust='spacingAndGlyphs'>250</text>
+<text x='331.55' y='352.10' text-anchor='middle' style='font-size: 11.00px; font-family: Arial;' textLength='140.64px' lengthAdjust='spacingAndGlyphs'>Number of survey responses</text>
+<text x='92.58' y='31.17' style='font-size: 11.00px; font-family: Arial;' textLength='333.84px' lengthAdjust='spacingAndGlyphs'>Of the respondents, 44% say they have used tidymodels a few times</text>
+<text x='92.58' y='14.94' style='font-size: 13.20px; font-family: Arial;' textLength='153.93px' lengthAdjust='spacingAndGlyphs'>Familiarity with tidymodels</text>
+</g>
+</svg>
